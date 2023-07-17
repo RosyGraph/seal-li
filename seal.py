@@ -39,18 +39,17 @@ def scrape_seal_urls():
         sleep(60 * 60)
         response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
     data = response.json()
-    seal_ids = [seal["id"] for seal in data["photos"]]
+    seal_urls = [seal["src"]["original"] for seal in data["photos"]]
     while next_page := data.get("next_page"):
         params["page"] = next_page
         response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
-        response.raise_for_status()
+        if response.status_code == 429:
+            print("Rate limit reached, sleeping 1 hour...")
+            sleep(60 * 60)
+            response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
         data = response.json()
-        seal_ids.extend([seal["id"] for seal in data["photos"]])
-        if "X-Ratelimit-Remaining" in response.headers:
-            rate_limit_remaining = int(response.headers["X-Ratelimit-Remaining"])
-            if rate_limit_remaining < 80:
-                print("Rate limit reached, sleeping 1 hour...")
-    return seal_ids
+        seal_urls.extend([seal["id"] for seal in data["photos"]])
+    return seal_urls
 
 
 def main():
@@ -61,6 +60,6 @@ def main():
 
 
 if __name__ == "__main__":
-    scraped_ids = scrape_seal_urls()
-    print("\n".join(scraped_ids))
+    scraped_urls = scrape_seal_urls()
+    print("\n".join(scraped_urls))
     P("seal_ids.txt").write_text("\n".join(scrape_seal_urls()))
