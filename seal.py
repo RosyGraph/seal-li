@@ -23,7 +23,7 @@ def get_seal():
     response.raise_for_status()
     data = response.json()
     random_seal = choice(data["photos"])
-    url_to_seal = random_seal["src"]["original"]
+    url_to_seal = random_seal["src"]["medium"]
     author = random_seal["photographer"]
     return f"![seal]({url_to_seal})", author
 
