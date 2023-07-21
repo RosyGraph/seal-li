@@ -60,6 +60,4 @@ def main():
 
 
 if __name__ == "__main__":
-    scraped_urls = scrape_seal_urls()
-    print("\n".join(scraped_urls))
-    P("seal_ids.txt").write_text("\n".join(scrape_seal_urls()))
+    main()
