@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Retrieve PEXELS_API_KEY from the environment or set it directly
+PEXELS_API_KEY="${PEXELS_API_KEY:-your_actual_api_key_here}"
+
+# Constants
+PEXELS_BASE_URL="https://api.pexels.com/v1/search"
+QUERY="anime seal"
+
+# Function to get a seal image
+get_seal() {
+  if [ -z "$PEXELS_API_KEY" ]; then
+    echo "No PEXELS_API_KEY provided" >&2
+    exit 1
+  fi
+
+  # Make the API request and capture the response
+  response=$(curl -s -G -H "Authorization: $PEXELS_API_KEY" --data-urlencode "query=$QUERY" --data-urlencode "per_page=1" "$PEXELS_BASE_URL")
+  
+  # Check for curl errors
+  if [ $? -ne 0 ]; then
+    echo "API request failed" >&2
+    exit 1
+  fi
+
+  # Parse the HTTP status code from the response
+  http_status=$(echo "$response" | grep -o '"status":\s*[0-9]*' | awk '{print $2}')
+
+  # Check if the response contains an error
+  if [ "$http_status" != "200" ] && [ "$http_status" != "" ]; then
+    echo "API request failed with status $http_status" >&2
+    exit 1
+  fi
+
+  # Parse the JSON response to extract the first URL and author
+  url_to_seal=$(echo "$response" | grep -m 1 -o '"medium":"[^"]*' | sed 's/"medium":"//')
+  author=$(echo "$response" | grep -m 1 -o '"photographer":"[^"]*' | sed 's/"photographer":"//')
+
+  if [ -z "$url_to_seal" ] || [ -z "$author" ]; then
+    echo "Failed to parse response" >&2
+    exit 1
+  fi
+
+  seal="![seal]($url_to_seal)"
+
+  # Copy to clipboard
+  if command -v xclip &> /dev/null; then
+    echo "$seal" | xclip -selection clipboard
+  elif command -v pbcopy &> /dev/null; then
+    echo "$seal" | pbcopy
+  else
+    echo "Neither xclip nor pbcopy is installed" >&2
+    exit 1
+  fi
+
+  echo "Copied seal to clipboard!"
+  echo "Seal by $author"
+}
+
+# Main function
+main() {
+  get_seal
+}
+
+main

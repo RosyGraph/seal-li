@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-from pathlib import Path as P
 from random import choice
 from time import sleep
 
@@ -12,13 +11,14 @@ load_dotenv()
 
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY", "")
 PEXELS_BASE_URL = "https://api.pexels.com/v1/search"
+QUERY = "anime seal"
 
 
 def get_seal():
     if not PEXELS_API_KEY:
         raise ValueError("No PEXELS_API_KEY provided")
     headers = {"Authorization": PEXELS_API_KEY}
-    params = {"query": "seal", "per_page": 80}
+    params = {"query": QUERY, "per_page": 80}
     response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
     response.raise_for_status()
     data = response.json()
@@ -32,7 +32,7 @@ def scrape_seal_urls():
     if not PEXELS_API_KEY:
         raise ValueError("No PEXELS_API_KEY provided")
     headers = {"Authorization": PEXELS_API_KEY}
-    params = {"query": "seal", "per_page": 80}
+    params = {"query": QUERY, "per_page": 80}
     response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
     if response.status_code == 429:
         print("Rate limit reached, sleeping 1 hour...")
